@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/distance-run/static/css/main.901745ee.css",
-    "main.js": "/distance-run/static/js/main.d94b0c6d.js",
+    "main.css": "/distance-run/static/css/main.d3f688ca.css",
+    "main.js": "/distance-run/static/js/main.f93ebad1.js",
     "static/js/453.a2224487.chunk.js": "/distance-run/static/js/453.a2224487.chunk.js",
     "index.html": "/distance-run/index.html",
-    "main.901745ee.css.map": "/distance-run/static/css/main.901745ee.css.map",
-    "main.d94b0c6d.js.map": "/distance-run/static/js/main.d94b0c6d.js.map",
+    "main.d3f688ca.css.map": "/distance-run/static/css/main.d3f688ca.css.map",
+    "main.f93ebad1.js.map": "/distance-run/static/js/main.f93ebad1.js.map",
     "453.a2224487.chunk.js.map": "/distance-run/static/js/453.a2224487.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.901745ee.css",
-    "static/js/main.d94b0c6d.js"
+    "static/css/main.d3f688ca.css",
+    "static/js/main.f93ebad1.js"
   ]
 }

@@ -79,7 +79,7 @@ const formatRunnerTime = (timeInSecondes) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')}`
 }
 
-const MouseMarker = ({ routePoints, runners }) => {
+const MouseMarker = ({ routePoints, runners, startDate }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [distanceInMeters, setDistanceInMeters] = useState(0);
   const markerRef = useRef(null);
@@ -116,11 +116,14 @@ const MouseMarker = ({ routePoints, runners }) => {
       <Popup autoClose={false} keepInView closeButton={false}>
         <div>
           <p>Distance: {distanceInMeters}m</p>
-          {runners.map((runner, index) => (
-            <div key={index}>
-              {runner.name} ({runner.speed} m/s): {formatRunnerTime(distanceInMeters * runner.speed / 1000 * 60)} min
-            </div>
-          ))}
+          {runners.map((runner, index) => {
+            const timeInSecondes = distanceInMeters * runner.speed / 1000 * 60;
+            const date = startDate && new Date(startDate + timeInSecondes * 1000);
+            return (<div key={index}>
+              {runner.name} ({runner.speed} m/s): {formatRunnerTime(timeInSecondes)} min{date ? ` (${date.getHours().toString().padStart(1, '0')}h${date.getMinutes().toString().padStart(2, '0')})` : ''}
+            </div>)
+          }
+          )}
         </div>
       </Popup>
     </Marker>
@@ -130,6 +133,8 @@ const MouseMarker = ({ routePoints, runners }) => {
 const MapComponent = () => {
   const [gpxData, setGpxData] = useState(null);
   const [routePoints, setRoutePoints] = useState([]);
+  const [startTimeHours, setStartTimeHours] = useState();
+  const [startTimeMinutes, setStartTimeMinutes] = useState(0);
   const [runners, setRunners] = useState([{ name: 'Runner 1', speed: DEFAULT_SPEED }]); // Initial runner speed
 
   const handleFileUpload = (event) => {
@@ -164,11 +169,15 @@ const MapComponent = () => {
   return (
     <div className="map-wrapper">
       <div className="map-configuration">
-        <div>
+        <div
+          className="configuration-section"
+        >
           <div className="configuration-title">Upload a GPX file</div>
           <input type="file" accept=".gpx" onChange={handleFileUpload} />
         </div>
-        <div>
+        <div
+          className="configuration-section"
+        >
           <div className="configuration-title">Runners' Speeds</div>
           {runners.map((runner, index) => (
             <div className='runner' key={index}>
@@ -180,7 +189,7 @@ const MapComponent = () => {
                   onChange={(e) => updateRunnerName(index, e.target.value)}
                 /> speed:
                 <input
-                  className='runner-input-speed'
+                  className='runner-input-number'
                   type="number"
                   value={runner.speed}
                   onChange={(e) => updateRunnerSpeed(index, e.target.value)}
@@ -193,6 +202,21 @@ const MapComponent = () => {
             </div>
           ))}
           <button onClick={addRunner}>Add Runner</button>
+        </div>
+        <div
+          className="configuration-section"
+        >
+          <div className="configuration-title">Start time</div>
+          <input
+            className='runner-input-number'
+            value={startTimeHours}
+            onChange={(e) => setStartTimeHours(e.target.value)}
+          />h
+          <input
+            className='runner-input-number'
+            value={startTimeMinutes}
+            onChange={(e) => setStartTimeMinutes(e.target.value)}
+          />
         </div>
       </div>
 
@@ -208,7 +232,10 @@ const MapComponent = () => {
 
         {gpxData && <GPXTrack gpxData={gpxData} setRoutePoints={setRoutePoints} />}
 
-        <MouseMarker routePoints={routePoints} runners={runners} />
+        <MouseMarker
+          startDate={startTimeHours ? new Date().setHours(startTimeHours, startTimeMinutes) : undefined}
+          routePoints={routePoints}
+          runners={runners} />
       </MapContainer>
     </div>
   );
