@@ -20,7 +20,6 @@ const GPXTrack = ({ gpxData, setRoutePoints }) => {
   useEffect(() => {
     if (!gpxData) return;
 
-    // Load GPX file and add it to the map
     const gpx = new L.GPX(gpxData, {
       async: true,
       marker_options: {
@@ -37,7 +36,7 @@ const GPXTrack = ({ gpxData, setRoutePoints }) => {
 
     gpx.on('loaded', (e) => {
       const route = e.target.getLayers()[0].getLayers()[0];
-      setRoutePoints(route.getLatLngs()); // Save route points for cursor tracking
+      setRoutePoints(route.getLatLngs());
       map.fitBounds(route.getBounds());
     });
 
@@ -72,11 +71,11 @@ const calculateDistanceFromStart = (routePoints, currentLatLng) => {
   return totalDistance;
 };
 
-const formatRunnerTime = (timeInSecondes) => {
-  const hours = Math.floor(timeInSecondes / 3600);
-  const minutes = Math.floor((timeInSecondes % 3600) / 60);
-  const secondes = Math.floor(timeInSecondes % 60);
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')}`
+const formatRunnerTime = (timeInSeconds) => {
+  const hours = Math.floor(timeInSeconds / 3600);
+  const minutes = Math.floor((timeInSeconds % 3600) / 60);
+  const seconds = Math.floor(timeInSeconds % 60);
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 const MouseMarker = ({ routePoints, runners, startDate }) => {
@@ -93,7 +92,6 @@ const MouseMarker = ({ routePoints, runners, startDate }) => {
   const handleMouseMove = (e) => {
     if (!routePoints.length) return;
 
-    // Find the closest point on the route to the cursor
     const closestPoint = routePoints.reduce((closest, point) => {
       const distance = e.latlng.distanceTo(point);
       return distance < closest.distance ? { point, distance } : closest;
@@ -102,11 +100,10 @@ const MouseMarker = ({ routePoints, runners, startDate }) => {
     if (closestPoint) {
       const distanceInMeters = calculateDistanceFromStart(routePoints, closestPoint);
       setDistanceInMeters(Math.round(distanceInMeters * 100) / 100);
-      setMarkerPosition(closestPoint); // Update marker position
+      setMarkerPosition(closestPoint);
     }
   };
 
-  // Attach mousemove event using `useMapEvent`
   useMapEvent('mousemove', handleMouseMove);
 
   if (!markerPosition) return null;
@@ -117,13 +114,15 @@ const MouseMarker = ({ routePoints, runners, startDate }) => {
         <div>
           <p>Distance: {distanceInMeters}m</p>
           {runners.map((runner, index) => {
-            const timeInSecondes = distanceInMeters * runner.speed / 1000 * 60;
-            const date = startDate && new Date(startDate + timeInSecondes * 1000);
-            return (<div key={index}>
-              {runner.name} ({runner.speed} m/s): {formatRunnerTime(timeInSecondes)} min{date ? ` (${date.getHours().toString().padStart(1, '0')}h${date.getMinutes().toString().padStart(2, '0')})` : ''}
-            </div>)
-          }
-          )}
+            const timeInSeconds = (distanceInMeters * runner.speed) / 1000 * 60;
+            const date = startDate && new Date(startDate + timeInSeconds * 1000);
+            return (
+              <div key={index}>
+                {runner.name} ({runner.speed} min/km): {formatRunnerTime(timeInSeconds)}
+                {date ? ` (${date.toLocaleTimeString()})` : ''}
+              </div>
+            );
+          })}
         </div>
       </Popup>
     </Marker>
@@ -134,12 +133,12 @@ const MapComponent = () => {
   const [gpxData, setGpxData] = useState(null);
   const [routePoints, setRoutePoints] = useState([]);
   const [startTimeHours, setStartTimeHours] = useState();
-  const [startTimeMinutes, setStartTimeMinutes] = useState(0);
-  const [runners, setRunners] = useState([{ name: 'Runner 1', speed: DEFAULT_SPEED }]); // Initial runner speed
+  const [startTimeMinutes, setStartTimeMinutes] = useState();
+  const [runners, setRunners] = useState([{ name: 'Runner 1', speed: DEFAULT_SPEED }]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file && file.type === 'application/gpx+xml') {
+    if (file && (file.name.endsWith('.gpx') || file.type === 'application/gpx+xml')) {
       const reader = new FileReader();
       reader.onload = (e) => setGpxData(e.target.result);
       reader.readAsText(file);
@@ -149,7 +148,7 @@ const MapComponent = () => {
   };
 
   const addRunner = () => {
-    setRunners([...runners, { name: `Runner ${runners.length + 1}`, speed: runners.length + DEFAULT_SPEED }]);
+    setRunners([...runners, { name: `Runner ${runners.length + 1}`, speed: DEFAULT_SPEED }]);
   };
 
   const updateRunnerSpeed = (index, speed) => {
@@ -166,25 +165,25 @@ const MapComponent = () => {
     setRunners(updatedRunners);
   };
 
+  const startDate = startTimeHours != null && startTimeMinutes != null
+    ? new Date().setHours(startTimeHours, startTimeMinutes, 0, 0)
+    : null;
+
   return (
     <div className="map-wrapper">
       <div className="map-configuration">
-        <div
-          className="configuration-section"
-        >
+        <div className="configuration-section">
           <div className="configuration-title">Upload a GPX file</div>
           <input type="file" accept=".gpx" onChange={handleFileUpload} />
         </div>
-        <div
-          className="configuration-section"
-        >
+        <div className="configuration-section">
           <div className="configuration-title">Runners' Speeds</div>
           {runners.map((runner, index) => (
             <div className='runner' key={index}>
               <label>
                 <input
                   className='runner-input-name'
-                  type="string"
+                  type="text"
                   value={runner.name}
                   onChange={(e) => updateRunnerName(index, e.target.value)}
                 /> speed:
@@ -193,7 +192,7 @@ const MapComponent = () => {
                   type="number"
                   value={runner.speed}
                   onChange={(e) => updateRunnerSpeed(index, e.target.value)}
-                /> (m/s)
+                /> (min/km)
               </label>
               <button
                 className='delete-runner'
@@ -203,39 +202,29 @@ const MapComponent = () => {
           ))}
           <button onClick={addRunner}>Add Runner</button>
         </div>
-        <div
-          className="configuration-section"
-        >
+        <div className="configuration-section">
           <div className="configuration-title">Start time</div>
           <input
             className='runner-input-number'
+            type="number"
             value={startTimeHours}
-            onChange={(e) => setStartTimeHours(e.target.value)}
+            onChange={(e) => setStartTimeHours(parseInt(e.target.value))}
+            placeholder="HH"
           />h
           <input
             className='runner-input-number'
+            type="number"
             value={startTimeMinutes}
-            onChange={(e) => setStartTimeMinutes(e.target.value)}
-          />
+            onChange={(e) => setStartTimeMinutes(parseInt(e.target.value))}
+            placeholder="MM"
+          />m
         </div>
       </div>
 
-      <MapContainer
-        center={[51.505, -0.09]}
-        zoom={13}
-        className="map-container"
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors"
-        />
-
+      <MapContainer center={[51.505, -0.09]} zoom={13} className="map-container">
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
         {gpxData && <GPXTrack gpxData={gpxData} setRoutePoints={setRoutePoints} />}
-
-        <MouseMarker
-          startDate={startTimeHours ? new Date().setHours(startTimeHours, startTimeMinutes) : undefined}
-          routePoints={routePoints}
-          runners={runners} />
+        <MouseMarker startDate={startDate} routePoints={routePoints} runners={runners} />
       </MapContainer>
     </div>
   );

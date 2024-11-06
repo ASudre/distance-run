@@ -21,12 +21,25 @@ body,
   display: flex;
   flex-direction: row;
   margin: 5px;
+
+  @media screen and (max-width: 767px) {
+    flex-direction: column;
+  }
 }
 
 .configuration-section {
-  padding-left: 5px;
-  margin-left: 5px;
-  border-left: 1px solid grey;
+
+  @media screen and (min-width: 767px) {
+    padding-left: 5px;
+    margin-left: 5px;
+    border-left: 1px solid grey;
+  }
+
+  @media screen and (max-width: 767px) {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid grey;
+  }
 }
 
 .configuration-title {
@@ -44,13 +57,11 @@ body,
 .runner-input-name {
   text-align: start;
   width: 100px;
-  margin-left: 2px;
 }
 
 .runner-input-number {
   text-align: end;
   width: 40px;
-  margin-left: 2px;
 }
 
 .runner {
