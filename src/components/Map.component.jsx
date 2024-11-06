@@ -1,5 +1,5 @@
 // MapComponent.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, Marker, Popup, useMapEvent } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-gpx';
@@ -76,6 +76,17 @@ const calculateDistanceFromStart = (routePoints, currentLatLng) => {
 
 const MouseMarker = ({ routePoints }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
+  const [distanceInMeters, setDistanceInMeters] = useState(0);
+  const [elapsedTimeInSeconds, setElapsedTimeInSeconds] = useState(0);
+  const markerRef = useRef(null);
+
+  const SPEED_MIN_BY_KM = 4;
+
+  useEffect(() => {
+    if (markerRef?.current) {
+      markerRef.current.openPopup();
+    }
+  }, [markerPosition]);
 
   const handleMouseMove = (e) => {
     if (!routePoints.length) return;
@@ -88,7 +99,8 @@ const MouseMarker = ({ routePoints }) => {
 
     if (closestPoint) {
       const distanceInMeters = calculateDistanceFromStart(routePoints, closestPoint);
-      console.log(distanceInMeters);
+      setDistanceInMeters(Math.round(distanceInMeters * 100) / 100);
+      setElapsedTimeInSeconds(Math.round(SPEED_MIN_BY_KM * distanceInMeters / 1000))
       setMarkerPosition(closestPoint);  // Update marker position
     }
   };
@@ -100,9 +112,15 @@ const MouseMarker = ({ routePoints }) => {
     return null
   }
 
-  return <Marker position={markerPosition}>
-    <Popup>Following the cursor along the route</Popup>
-  </Marker>
+  return <Marker position={markerPosition} ref={markerRef}>
+    <Popup autoClose={false} keepInView>
+      <>
+        distance: {distanceInMeters}m
+        <br />
+        time: {elapsedTimeInSeconds}min
+      </>
+    </Popup>
+  </Marker >
 }
 
 const MapComponent = () => {
@@ -121,14 +139,14 @@ const MapComponent = () => {
   };
 
   return (
-    <div>
+    <div className="map-wrapper">
       <h2>Upload a GPX file</h2>
       <input type="file" accept=".gpx" onChange={handleFileUpload} />
 
       <MapContainer
         center={[51.505, -0.09]}
         zoom={13}
-        style={{ height: "400px", width: "100%" }}
+        className="map-container"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
