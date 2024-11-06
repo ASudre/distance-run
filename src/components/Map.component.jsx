@@ -5,6 +5,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-gpx';
 import L from 'leaflet';
 
+const DEFAULT_SPEED = 4;
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -34,9 +36,7 @@ const GPXTrack = ({ gpxData, setRoutePoints }) => {
     });
 
     gpx.on('loaded', (e) => {
-      var gpx = e.target;
-      const route = gpx.getLayers()[0].getLayers()[0];
-
+      const route = e.target.getLayers()[0].getLayers()[0];
       setRoutePoints(route.getLatLngs()); // Save route points for cursor tracking
       map.fitBounds(route.getBounds());
     });
@@ -51,12 +51,10 @@ const GPXTrack = ({ gpxData, setRoutePoints }) => {
   return null;
 };
 
-
 const calculateDistanceFromStart = (routePoints, currentLatLng) => {
   if (!routePoints.length) return 0;
 
-  const startPoint = routePoints[0]
-
+  const startPoint = routePoints[0];
   let totalDistance = 0;
   let prevPoint = startPoint;
 
@@ -74,13 +72,17 @@ const calculateDistanceFromStart = (routePoints, currentLatLng) => {
   return totalDistance;
 };
 
-const MouseMarker = ({ routePoints }) => {
+const formatRunnerTime = (timeInSecondes) => {
+  const hours = Math.floor(timeInSecondes / 3600);
+  const minutes = Math.floor((timeInSecondes % 3600) / 60);
+  const secondes = Math.floor(timeInSecondes % 60);
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')}`
+}
+
+const MouseMarker = ({ routePoints, runners }) => {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [distanceInMeters, setDistanceInMeters] = useState(0);
-  const [elapsedTimeInSeconds, setElapsedTimeInSeconds] = useState(0);
   const markerRef = useRef(null);
-
-  const SPEED_MIN_BY_KM = 4;
 
   useEffect(() => {
     if (markerRef?.current) {
@@ -100,32 +102,35 @@ const MouseMarker = ({ routePoints }) => {
     if (closestPoint) {
       const distanceInMeters = calculateDistanceFromStart(routePoints, closestPoint);
       setDistanceInMeters(Math.round(distanceInMeters * 100) / 100);
-      setElapsedTimeInSeconds(Math.round(SPEED_MIN_BY_KM * distanceInMeters / 1000))
-      setMarkerPosition(closestPoint);  // Update marker position
+      setMarkerPosition(closestPoint); // Update marker position
     }
   };
 
   // Attach mousemove event using `useMapEvent`
   useMapEvent('mousemove', handleMouseMove);
 
-  if (!markerPosition) {
-    return null
-  }
+  if (!markerPosition) return null;
 
-  return <Marker position={markerPosition} ref={markerRef}>
-    <Popup autoClose={false} keepInView>
-      <>
-        distance: {distanceInMeters}m
-        <br />
-        time: {elapsedTimeInSeconds}min
-      </>
-    </Popup>
-  </Marker >
-}
+  return (
+    <Marker position={markerPosition} ref={markerRef}>
+      <Popup autoClose={false} keepInView closeButton={false}>
+        <div>
+          <p>Distance: {distanceInMeters}m</p>
+          {runners.map((runner, index) => (
+            <div key={index}>
+              {runner.name} ({runner.speed} m/s): {formatRunnerTime(distanceInMeters * runner.speed / 1000 * 60)} min
+            </div>
+          ))}
+        </div>
+      </Popup>
+    </Marker>
+  );
+};
 
 const MapComponent = () => {
   const [gpxData, setGpxData] = useState(null);
   const [routePoints, setRoutePoints] = useState([]);
+  const [runners, setRunners] = useState([{ name: 'Runner 1', speed: DEFAULT_SPEED }]); // Initial runner speed
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -138,10 +143,58 @@ const MapComponent = () => {
     }
   };
 
+  const addRunner = () => {
+    setRunners([...runners, { name: `Runner ${runners.length + 1}`, speed: runners.length + DEFAULT_SPEED }]);
+  };
+
+  const updateRunnerSpeed = (index, speed) => {
+    const updatedRunners = runners.map((runner, i) =>
+      i === index ? { ...runner, speed: parseFloat(speed) } : runner
+    );
+    setRunners(updatedRunners);
+  };
+
+  const updateRunnerName = (index, name) => {
+    const updatedRunners = runners.map((runner, i) =>
+      i === index ? { ...runner, name } : runner
+    );
+    setRunners(updatedRunners);
+  };
+
   return (
     <div className="map-wrapper">
-      <h2>Upload a GPX file</h2>
-      <input type="file" accept=".gpx" onChange={handleFileUpload} />
+      <div className="map-configuration">
+        <div>
+          <div className="configuration-title">Upload a GPX file</div>
+          <input type="file" accept=".gpx" onChange={handleFileUpload} />
+        </div>
+        <div>
+          <div className="configuration-title">Runners' Speeds</div>
+          {runners.map((runner, index) => (
+            <div className='runner' key={index}>
+              <label>
+                <input
+                  className='runner-input-name'
+                  type="string"
+                  value={runner.name}
+                  onChange={(e) => updateRunnerName(index, e.target.value)}
+                /> speed:
+                <input
+                  className='runner-input-speed'
+                  type="number"
+                  value={runner.speed}
+                  onChange={(e) => updateRunnerSpeed(index, e.target.value)}
+                /> (m/s)
+              </label>
+              <button
+                className='delete-runner'
+                onClick={() => setRunners(runners.filter((_, i) => i !== index))}
+              >x</button>
+            </div>
+          ))}
+          <button onClick={addRunner}>Add Runner</button>
+        </div>
+      </div>
 
       <MapContainer
         center={[51.505, -0.09]}
@@ -153,14 +206,9 @@ const MapComponent = () => {
           attribution="&copy; OpenStreetMap contributors"
         />
 
-        {gpxData && <GPXTrack
-          gpxData={gpxData}
-          setRoutePoints={setRoutePoints}
-        />}
+        {gpxData && <GPXTrack gpxData={gpxData} setRoutePoints={setRoutePoints} />}
 
-        <MouseMarker
-          routePoints={routePoints}
-        />
+        <MouseMarker routePoints={routePoints} runners={runners} />
       </MapContainer>
     </div>
   );

@@ -17,6 +17,42 @@ body,
   flex-direction: column;
 }
 
+.map-configuration {
+  display: flex;
+  flex-direction: row;
+  margin: 5px;
+}
+
+.configuration-title {
+  font-size: large;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.delete-runner {
+  cursor: pointer;
+  margin-left: 10px;
+  text-align: center;
+}
+
+.runner-input-name {
+  text-align: start;
+  width: 100px;
+  margin-left: 2px;
+}
+
+.runner-input-speed {
+  text-align: end;
+  width: 50px;
+  margin-left: 2px;
+}
+
+.runner {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 5px;
+}
+
 .map-container {
   flex: 1;
 }
