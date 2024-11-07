@@ -10,6 +10,7 @@ function GpxInput({ setGpxData }) {
       reader.onload = (e) => setGpxData(e.target.result);
       reader.readAsText(file);
     } else {
+      // eslint-disable-next-line no-alert
       alert('Please upload a valid GPX file.');
     }
   };
