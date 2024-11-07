@@ -1,12 +1,10 @@
 import React from 'react';
-import Map from './components/Map.component';
+import MapTimes from './features/map-times/MapTimes';
 import './App.css';
 
 function App() {
   return (
-    <div className="app-container">
-      <Map />
-    </div>
+    <MapTimes />
   );
 }
 

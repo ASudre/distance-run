@@ -1,0 +1,23 @@
+.runner {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 5px;
+  
+  .delete {
+    cursor: pointer;
+    margin-left: 10px;
+    text-align: center;
+  }
+
+  .input-name {
+    text-align: start;
+    width: 100px;
+    margin-right: 4px;
+  }
+
+  .input-number {
+    text-align: end;
+    width: 40px;
+    margin-right: 4px;
+  }
+}

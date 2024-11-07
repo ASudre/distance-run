@@ -1,0 +1,36 @@
+{
+  "extends": [
+    "airbnb",
+    "airbnb/hooks"
+  ],
+  "plugins": [
+    "react",
+    "react-hooks"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off", // Disable if using Next.js or modern React where imports are not necessary
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      }
+    ],
+    "react/require-default-props": "off",
+    "react/forbid-prop-types": "off"
+  }
+}

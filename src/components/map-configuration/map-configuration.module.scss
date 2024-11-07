@@ -1,0 +1,9 @@
+.map-configuration {
+  display: flex;
+  flex-direction: row;
+  margin: 5px;
+
+  @media screen and (max-width: 767px) {
+    flex-direction: column;
+  }
+}
