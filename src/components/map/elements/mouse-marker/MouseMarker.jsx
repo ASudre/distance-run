@@ -44,6 +44,7 @@ function MouseMarker({
         <div>
           <p>
             Distance:
+            {' '}
             {distanceInMeters}
             m
           </p>
