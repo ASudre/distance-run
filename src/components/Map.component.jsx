@@ -110,7 +110,7 @@ const MouseMarker = ({ routePoints, runners, startDate }) => {
 
   return (
     <Marker position={markerPosition} ref={markerRef}>
-      <Popup autoClose={false} keepInView closeButton={false}>
+      <Popup autoClose={false} closeButton={false}>
         <div>
           <p>Distance: {distanceInMeters}m</p>
           {runners.map((runner, index) => {
