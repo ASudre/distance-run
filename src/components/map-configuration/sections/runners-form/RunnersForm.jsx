@@ -30,7 +30,7 @@ function RunnersForm({ runners, setRunners }) {
 
   return (
     <FormSection
-      title="Runners' Speeds"
+      title="Runners' Speeds (min/km)"
     >
       {runners.map((runner, index) => (
         <div
