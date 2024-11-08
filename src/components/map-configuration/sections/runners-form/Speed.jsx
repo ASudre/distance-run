@@ -8,7 +8,6 @@ function Speed({
 }) {
   return (
     <>
-      speed:
       <input
         className={styles['input-number']}
         min={0}
@@ -16,6 +15,7 @@ function Speed({
         type="number"
         value={runner.speedMinutes}
       />
+      min
       <input
         className={styles['input-number']}
         onChange={(e) => updateRunnerSpeedSeconds(e.target.value || 0)}
@@ -24,7 +24,7 @@ function Speed({
         type="number"
         value={runner.speedSeconds}
       />
-      (min/km)
+      s
     </>
   );
 }

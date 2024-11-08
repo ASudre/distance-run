@@ -37,19 +37,18 @@ function RunnersForm({ runners, setRunners }) {
           className={styles.runner}
           key={runner.id}
         >
-          <div>
-            <input
-              className={styles['input-name']}
-              onChange={(e) => updateRunnerName(index, e.target.value)}
-              type="text"
-              value={runner.name}
-            />
-            <Speed
-              runner={runner}
-              updateRunnerSpeedMinutes={updateRunnerSpeedMinutes(index)}
-              updateRunnerSpeedSeconds={updateRunnerSpeedSeconds(index)}
-            />
-          </div>
+          <input
+            className={styles['input-name']}
+            onChange={(e) => updateRunnerName(index, e.target.value)}
+            type="text"
+            value={runner.name}
+          />
+          :
+          <Speed
+            runner={runner}
+            updateRunnerSpeedMinutes={updateRunnerSpeedMinutes(index)}
+            updateRunnerSpeedSeconds={updateRunnerSpeedSeconds(index)}
+          />
           <button
             className={styles.delete}
             onClick={() => setRunners(runners.filter((_, i) => i !== index))}

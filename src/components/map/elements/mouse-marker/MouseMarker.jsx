@@ -40,7 +40,7 @@ function MouseMarker({
 
   return (
     <Marker position={markerPosition} ref={markerRef}>
-      <Popup autoClose={false} closeButton={false}>
+      <Popup>
         <div>
           <p>
             Distance:

@@ -10,14 +10,14 @@
   }
 
   .input-name {
+    flex: 1;
     text-align: start;
-    width: 100px;
-    margin-right: 4px;
+    max-width: 100px;
   }
 
   .input-number {
     text-align: end;
     width: 40px;
-    margin-right: 4px;
+    margin: 0 4px;
   }
 }

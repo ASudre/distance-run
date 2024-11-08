@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import cs from 'classnames';
 
 import FormSection from '../../../../core/form-section/FormSection';
 
@@ -22,7 +23,7 @@ function StartTimeForm({
       />
       h
       <input
-        className={styles['input-number']}
+        className={cs(styles['input-number'], styles.minutes)}
         type="number"
         onChange={(e) => setStartTimeMinutes(parseInt(e.target.value, 10))}
         placeholder="MM"

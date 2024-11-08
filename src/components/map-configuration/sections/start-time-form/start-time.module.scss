@@ -6,4 +6,9 @@
 .input-number {
   text-align: end;
   width: 40px;
+  margin-right: 4px;
+
+  &.minutes {
+    margin-left: 4px;
+  }
 }
